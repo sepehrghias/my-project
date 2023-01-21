@@ -66,7 +66,7 @@ void createfile(char *a){
 int t;
 char *path;
 char *name;
-path = strstr(a , "/root");
+path = strstr(a , "root");
 name=find_name(path);
 printf("name of file: %s\n" , name);
 t=nameis_core(name);
