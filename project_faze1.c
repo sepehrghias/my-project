@@ -96,18 +96,19 @@ int check_file(char*path){
 
 char* get_path(char* a){
     char*path;
-    char path1[300]={'\0'};
+    char *path1;
+    path1 = (char*)malloc(300 * sizeof(char));
     // if("creatfile--file /root"!=)
     path = strstr(a , "root");
-    /*int counter = 0;
+    int counter = 0;
     while(1){
         if(path[counter-4]=='.' && path[counter-3]=='t' && path[counter-1]=='t' && path[counter-2]=='x'){
             break;
         }
         path1[counter]=path[counter];
         counter++;
-    }*/
-    return path;
+    }
+    return path1;
 }
 void makedir(char *path){
     char *string ;
@@ -129,7 +130,7 @@ void makedir(char *path){
 void createfile(char *a){
     int t;
     char *path1;
-    char path[100];
+    char path[300];
     char *name;
     path1=get_path(a);
     strcpy(path , path1);
@@ -174,7 +175,9 @@ char *getstring(char*a){
     return string;
 }
 void insertstr(char *a) {
-    char path[100], string[400] ,stri[400];
+    char path[100] ,stri[400];
+    char *string;
+    string = (char*)malloc(400 * sizeof(char));
     int from, to;
     strcpy(path , get_path(a));
     strcpy(string,getstring(a));
@@ -208,16 +211,25 @@ void insertstr(char *a) {
 
         }
         printf("%s %d\n" ,string , strlen(string));
-        /*fclose(fp);
+        fclose(fp);
+        int ska =0 ;
         FILE * file = fopen(path , "w");
         fputs(matn , file);
-        fputs(string , file);
+        while(1) {
+            if(string[ska]=='\0')
+                break;
+            else if(string[ska]=='\n')
+                fputc('\n' , file);
+            else
+                fputc(string[ska] , file);
+            ska++;
+        }
         fputc('\n' , file);
         fputs(matn2 , file);
 
         printf("added succesfully\n");
         fclose(file);
-    }*/}
+    }
 }
 
 void cat(char* a){
