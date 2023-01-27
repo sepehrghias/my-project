@@ -115,18 +115,18 @@ void makedir(char *path){
     string = (char *) calloc(100 , sizeof(char));
     int i = 0;
     string[0]='\0';
-            while(1){
-                if(i==strlen(path))
-                break;
-                if(path[i]=='/'){
-                    mkdir(string , 0777);
-                }
-                string[i]=path[i];
+    while(1){
+        if(i==strlen(path))
+            break;
+        if(path[i]=='/'){
+            mkdir(string , 0777);
+        }
+        string[i]=path[i];
 
-                i++;
-            }
-
+        i++;
     }
+
+}
 void createfile(char *a){
     int t;
     char *path1;
@@ -169,12 +169,13 @@ char *getstring(char*a){
             string[counter+6]=='\0';
             break;
         }
-         string[counter]=a[counter+6];
-         counter++;
+        string[counter]=a[counter+6];
+        counter++;
     }
     return string;
 }
 void insertstr(char *a) {
+    //back to insert to corect it
     char path[100] ,stri[400];
     char *string;
     string = (char*)malloc(400 * sizeof(char));
@@ -184,7 +185,8 @@ void insertstr(char *a) {
     a = strstr(a , "--pos");
     sscanf(a , "--pos %d:%d" ,& from ,& to);
     int line = to - from;
-    char matn[NUM], matn2[NUM];
+    char *matn =(char*) calloc(NUM , sizeof(char));
+    char *matn2 =(char*) calloc(NUM , sizeof(char));
     int lots = 1, counter = 0;
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
@@ -193,11 +195,12 @@ void insertstr(char *a) {
     } else {
         while (1) {
             if (lots < from) {
-                matn[counter] = fgetc(fp);
-                if (matn[counter]  == NULL) {
+
+                if (feof(fp)) {
                     break;
                 }
-                if (matn[counter ] == '\n') {
+                matn[counter]=fgetc(fp);
+                if (matn[counter] == '\n') {
                     lots++;
                 }
                 counter++;
@@ -214,12 +217,25 @@ void insertstr(char *a) {
         fclose(fp);
         int ska =0 ;
         FILE * file = fopen(path , "w");
+
         fputs(matn , file);
+        if(lots<from){
+            for(int i=0 ; i<from-lots ; i++)
+                fputc('\n' , file);
+        }
         while(1) {
             if(string[ska]=='\0')
                 break;
-            else if(string[ska]=='\n')
+            else if(string[ska]=='\\' && string[ska+1]=='\\' && string[ska]=='n'){
+                fputc('\\' , file);
+                fputc('n' , file);
+                ska += 2 ;
+            }
+            else if(string[ska]=='\\' && string[ska+1]=='n'){
                 fputc('\n' , file);
+                ska ++;
+            }
+
             else
                 fputc(string[ska] , file);
             ska++;
@@ -232,19 +248,20 @@ void insertstr(char *a) {
     }
 }
 
-void cat(char* a){
-    char * path;
+void cat(char* a) {
+    char *path;
     path = get_path(a);
+
     char string[100];
-    FILE * myfile = fopen(path , "r");
-    while(1){
-        if(myfile==NULL) {
+    FILE *myfile = fopen(path, "r");
+    while (1) {
+        if (myfile == NULL) {
             printf("it's not correct address or file name");
             break;
         }
-        if( fgets(string , 20 , myfile) == NULL)
+        if (fgets(string, 20, myfile) == NULL)
             break;
-        printf("%s" , string);
+        printf("%s", string);
     }
     fclose(myfile);
     printf("\n");
