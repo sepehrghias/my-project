@@ -31,6 +31,7 @@ void removes(char *a);
 void copy(char *a);
 void cut(char *a);
 void paste(char *a);
+int ch_enter(char *string);
 
 int main(){
     char a[300];
@@ -253,17 +254,16 @@ void insertstr(char *a) {
         printf("%s %d\n" ,string , strlen(string));
         fclose(fp);
         int ska =0 ;
-        FILE * file = fopen(path , "w");
-
-        fputs(matn , file);
-        if(lots<from){
-            for(int i=0 ; i<from-lots ; i++)
-                fputc('\n' , file);
+        if(from>lots){
+            printf("you enter wrong position\n");
+            return;
         }
+        FILE * file = fopen(path , "w");
+        fputs(matn , file);
         while(1) {
             if(string[ska]=='\0')
                 break;
-            else if(string[ska]=='\\' && string[ska+1]=='\\' && string[ska]=='n'){
+            else if(string[ska]=='\\' && string[ska+1]=='\\' && string[ska+2]=='n'){
                 fputc('\\' , file);
                 fputc('n' , file);
                 ska += 2 ;
@@ -276,6 +276,11 @@ void insertstr(char *a) {
             else
                 fputc(string[ska] , file);
             ska++;
+        }
+        int g = ch_enter(string);
+        if(line-g>0){
+            for(int i = line-g  ; i!=0 ; i--)
+                fputc('\n' , file);
         }
         fputc('\n' , file);
         fputs(matn2 , file);
@@ -307,6 +312,7 @@ void cat(char* a) {
 }
 void removes(char *a){
     //talash bara hazf on namade
+    char u;
     char *path = get_path(a);
     char *string = (char*)calloc(NUM , sizeof(char));
     char * t;
@@ -346,7 +352,10 @@ void removes(char *a){
             }
                 else{
                     if(flag=='b'){
-                        string[counter-chand]=fgetc(fp);
+                        u=fgetc(fp);
+                        if(u==EOF)
+                            break;
+                        string[counter-chand]=u;
                     }
                     else if(flag=='f'){
                         if(h==0) {
@@ -355,7 +364,10 @@ void removes(char *a){
                         }
                         h++;
                         //barresi qutation
-                        string[counter-1]=fgetc(fp);
+                        u=fgetc(fp);
+                        if(u==EOF)
+                            break;
+                        string[counter-1] = u;
                     }
                     //barresi word age \n dare ya na
                     else{
@@ -479,4 +491,12 @@ void paste(char *a){
         return ;
     }
     insertstr(a);
+}
+
+int ch_enter(char *string){
+    int counter = 0;
+    for(int i = 0 ; i<strlen(string) ; i++){
+        if(string[i]=='\n')
+            counter++;
+    }
 }
