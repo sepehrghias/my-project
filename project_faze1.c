@@ -31,6 +31,7 @@ void removes(char *a);
 void copy(char *a);
 void cut(char *a);
 void paste(char *a);
+
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -416,19 +417,22 @@ void copy(char *a){
             }
             else{
                 if(flag=='b'){
+                    //backward true
                     int i ,j;
-                    for(i = chand-1 ,j =0  ; i>-1 ; j++ ,  i--)
+                    string[counter]=fgetc(fp);
+                    for(i = chand-1 ,j =0  ; i>=0 ; j++ ,  i--)
                         clipboard[j] = string[counter-i];
                         clipboard[j+1]='\0';
                     break;
                 }
                 else if(flag=='f'){
+                    //forward true
                     for(int i = 0 ; i<chand ; i++)
                         clipboard[i]=fgetc(fp);
                     clipboard[chand] = '\0';
                     break;
                 }
-                    //barresi word age \n dare ya na
+
                 else{
                     printf("not correct command\n");
                     return;
@@ -443,19 +447,18 @@ void copy(char *a){
         return;
     }
     fclose(fp);
-    printf("%s\n" , clipboard);
     printf("copy successfully\n");
 }
 
 void cut(char *a){
     copy(a);
     removes(a);
-    printf("cut successfully");
+    printf("cut successfully\n");
 }
 char * tabdil(char *a){
     char path[NUM];
     char *t;
-    char string[NUM] = " --str";
+    char string[NUM] = " --str ";
     strcpy(path , get_path(a));
     strcat(string , clipboard);
     t = strstr(a , " --pos");
@@ -470,7 +473,6 @@ char * tabdil(char *a){
 void paste(char *a){
     //its not okay yet
     //first handle it insert
-    printf("%s\n" , clipboard);
     a = tabdil(a);
     if(a==NULL){
         printf("not correct command\n");
