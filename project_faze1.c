@@ -15,6 +15,9 @@
 #include <unistd.h>
 
 #define NUM 1000000
+
+char clipboard[NUM];
+
 void createfile(char *a);
 char * find_name(char *path);
 int nameis_core(char *name);
@@ -23,13 +26,18 @@ char* get_path(char* a);
 void cat(char* a);
 int check_file(char *a);
 char *getstring(char *a);
-
+char* tabdil(char *a);
+void removes(char *a);
+void copy(char *a);
+void cut(char *a);
+void paste(char *a);
 int main(){
     char a[300];
     mkdir("root" , 0777);
     printf("hey lets start\n");
     while(1){
         gets(a);
+        //barresi address dar qutation
 
         if(!strncmp(a , "createfile--file " , strlen("createfile--file "))){
             createfile(a);
@@ -39,6 +47,18 @@ int main(){
         }
         else if(!strncmp(a , "cat--file " , strlen("cat--file "))){
             cat(a);
+        }
+        else if(!strncmp(a ,"removetstr--file " , strlen("removetstr--file ")) ){
+            removes(a);
+        }
+        else if(!strncmp(a , "copystr--file " , strlen("copystr--file "))){
+            copy(a);
+        }
+        else if(!strncmp(a , "pastestr--file " , strlen("pastestr--file "))){
+            paste(a);
+        }
+        else if(!strncmp(a , "cutstr--file " , strlen("cutstr--file "))){
+            cut(a);
         }
         else if(!strcmp(a ,"exit")){
             printf("have a good time!\n");
@@ -110,6 +130,7 @@ char* get_path(char* a){
     }
     return path1;
 }
+
 void makedir(char *path){
     char *string ;
     string = (char *) calloc(100 , sizeof(char));
@@ -127,8 +148,11 @@ void makedir(char *path){
     }
 
 }
+
 void createfile(char *a){
     int t;
+    //check
+    //kataha ra az ham joda kon
     char *path1;
     char path[300];
     char *name;
@@ -169,19 +193,31 @@ char *getstring(char*a){
             string[counter+6]=='\0';
             break;
         }
+        if(a[counter]=='\0'){
+            char * b = "FALSE RESULT";
+            return b;
+        }
         string[counter]=a[counter+6];
         counter++;
     }
     return string;
 }
+
 void insertstr(char *a) {
     //back to insert to corect it
+    // string age space dare joda kon
+    //hale //n
+    //talash bara hazf namad moshkel dar
     char path[100] ,stri[400];
     char *string;
     string = (char*)malloc(400 * sizeof(char));
     int from, to;
     strcpy(path , get_path(a));
     strcpy(string,getstring(a));
+    if(!strcmp(string , "FALSE RESULT")){
+        printf("not correct command\n");
+        return ;
+    }
     a = strstr(a , "--pos");
     sscanf(a , "--pos %d:%d" ,& from ,& to);
     int line = to - from;
@@ -249,6 +285,8 @@ void insertstr(char *a) {
 }
 
 void cat(char* a) {
+    //check
+    //qutation
     char *path;
     path = get_path(a);
 
@@ -265,4 +303,178 @@ void cat(char* a) {
     }
     fclose(myfile);
     printf("\n");
+}
+void removes(char *a){
+    //talash bara hazf on namade
+    char *path = get_path(a);
+    char *string = (char*)calloc(NUM , sizeof(char));
+    char * t;
+    char flag='\0';
+    int l = 1;
+    int line=0 , word=0 , chand;
+    t= strstr(a , "--pos");
+    if(t==NULL){
+        printf("not correct command\n");
+        return;
+    }
+    sscanf(t,"--pos %d:%d --size %d -%c" , &line , &word , &chand , &flag);
+    if(line==1 || word==0 || flag=='\0'){
+        printf("not correct command\n");
+        return;
+    }
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("it's not correct address or file name\n");
+        fclose(fp);
+        return;
+    }
+    int counter = 0 , enter=1;
+    int h = 0;
+    while(1){
+        if(feof(fp))
+            break;
+        if(enter!=line) {
+            string[counter] = fgetc(fp);
+            if (string[counter]=='\n')
+                enter++;
+        }
+        else{
+                if(l<word+1){
+                    string[counter]=fgetc(fp);
+                    l++;
+            }
+                else{
+                    if(flag=='b'){
+                        string[counter-chand]=fgetc(fp);
+                    }
+                    else if(flag=='f'){
+                        if(h==0) {
+                            for (int k = 0; k < chand-1; k++)
+                                fgetc(fp);
+                        }
+                        h++;
+                        //barresi qutation
+                        string[counter-1]=fgetc(fp);
+                    }
+                    //barresi word age \n dare ya na
+                    else{
+                        printf("not correct command\n");
+                        return;
+                    }
+                }
+        }
+
+        counter++;
+    }
+    if(enter!=line){
+        printf("you insert incorrect position\n");
+        return;
+    }
+    printf("removed succesfully\n");
+    fclose(fp);
+    FILE *file = fopen(path , "w");
+    fputs(string , file);
+    fclose(file);
+}
+
+void copy(char *a){
+    char *path = get_path(a);
+    char * t = (char *)calloc(NUM , sizeof(char));
+    char *string = (char*)calloc(NUM , sizeof(char));
+    int l =1 ;
+    int line = 0 , word = 0 , chand;
+    char flag;
+    t= strstr(a , "--pos");
+    if(t==NULL){
+        printf("not correct command\n");
+        return;
+    }
+    sscanf(t,"--pos %d:%d --size %d -%c" , &line , &word , &chand , &flag);
+    if(line==1 || word==0 || flag=='\0'){
+        printf("not correct command\n");
+        return;
+    }
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("it's not correct address or file name\n");
+        fclose(fp);
+        return;
+    }
+    int counter = 0 , enter = 1 ;
+    while(1){
+        if(feof(fp))
+        break;
+        if(enter!=line){
+            string[counter]=fgetc(fp);
+            if(string[counter]=='\n')
+                enter++;
+        }
+        else{
+            if(l<word) {
+                string[counter] = fgetc(fp);
+                l++;
+            }
+            else{
+                if(flag=='b'){
+                    int i ,j;
+                    for(i = chand-1 ,j =0  ; i>-1 ; j++ ,  i--)
+                        clipboard[j] = string[counter-i];
+                        clipboard[j+1]='\0';
+                    break;
+                }
+                else if(flag=='f'){
+                    for(int i = 0 ; i<chand ; i++)
+                        clipboard[i]=fgetc(fp);
+                    clipboard[chand] = '\0';
+                    break;
+                }
+                    //barresi word age \n dare ya na
+                else{
+                    printf("not correct command\n");
+                    return;
+                }
+            }
+
+        }
+        counter++;
+    }
+    if(enter!=line){
+        printf("not correct command\n");
+        return;
+    }
+    fclose(fp);
+    printf("%s\n" , clipboard);
+    printf("copy successfully\n");
+}
+
+void cut(char *a){
+    copy(a);
+    removes(a);
+    printf("cut successfully");
+}
+char * tabdil(char *a){
+    char path[NUM];
+    char *t;
+    char string[NUM] = " --str";
+    strcpy(path , get_path(a));
+    strcat(string , clipboard);
+    t = strstr(a , " --pos");
+    if(t==NULL){
+        return NULL;
+    }
+    strcat(path , string);
+    strcat(path , t);
+    return path;
+}
+
+void paste(char *a){
+    //its not okay yet
+    //first handle it insert
+    printf("%s\n" , clipboard);
+    a = tabdil(a);
+    if(a==NULL){
+        printf("not correct command\n");
+        return ;
+    }
+    insertstr(a);
 }
