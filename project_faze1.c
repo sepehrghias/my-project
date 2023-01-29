@@ -36,8 +36,9 @@ int ch_enter(char *string);
 void find(char *a);
 int check_featf(int a , int b , int c , int d);
 void undo(char *a);
-int FindSearch(FILE*file ,char * string);
+int FindSearch(FILE*file ,char * string , int word[] , int charc[]);
 int SpecialFind(char *string , FILE *file);
+int chand_space(char * string);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -550,6 +551,18 @@ int check_featf(int a , int b , int c , int d){
     }
 }
 
+/*void find_evethi(int word[] , int l[] ,char * string , FILE * fp){
+    char c;
+    char * search = calloc(NUM , sizeof(char));
+    int counter=0 , counterw = 0;
+    while(1){
+        if(feof(fp))
+            break;
+        c=fgetc(fp);
+
+    }
+}*/
+
 int SpecialFind (char * string , FILE * file){
     char * search = calloc(NUM , sizeof(char));
     char c;
@@ -584,10 +597,20 @@ int SpecialFind (char * string , FILE * file){
     return max;
 }
 
-int FindSearch(FILE*file ,char * string){
+int chand_space(char * string){
+    int space = 0;
+    for(int i = 0 ; i<strlen(string) ; i++){
+        if(string[i]==' ')
+        space++;
+    }
+    return space;
+}
+
+int FindSearch(FILE*file ,char * string , int word[] , int l[]){
     char c;
-    int counter = 0;
-    int flag = 1;
+    int space;
+    int counter = 0 , counterw = 0;
+    int flag = 1 , max = -1 , h = 0;
     int t = strlen(string);
     char * search = calloc(NUM , sizeof(char));
     if(string[t-1]=='*'){
@@ -598,6 +621,7 @@ int FindSearch(FILE*file ,char * string){
         counter = SpecialFind(string , file);
         return counter;
     }
+    space = chand_space(string);
     while(1){
         if(feof(file)){
             break;
@@ -606,6 +630,9 @@ int FindSearch(FILE*file ,char * string){
         if(c=='*'){
             search[counter]='\\';
             counter++;
+        }
+        if(c==' '){
+            counterw++;
         }
         search[counter] = c;
         flag = 1;
@@ -617,12 +644,19 @@ int FindSearch(FILE*file ,char * string){
                 }
             }
             if(flag==1 ){
-                return counter - t + 1;
+                word[h]=counterw - space;
+                l[h]=counter - t + 1;
+                h++;
+                if(h==1) {
+                    max = counter - t + 1;
+                }
             }
 
         counter++;
     }
-    return -1;
+    word[h]=-10;
+    l[h]=-10;
+    return max;
 }
 
 void find(char *a){
@@ -630,6 +664,8 @@ void find(char *a){
     int count = 0 ,  at = 0 , all = 0 , byword = 0;
     char string[NUM];
     char * b;
+    int   word[100]  ={-10};
+    int  charc[100]={-10};
     int check;
     int counter = 0;
     strcpy(string , getstring(a));
@@ -649,18 +685,80 @@ void find(char *a){
     }
     printf("at : %d , all : %d , count : %d , byword : %d\n" ,at , all , count , byword);
     check = check_featf(count , at , byword , all);
-    if(check==0)
+    if(check==0) {
+        printf("these features is not come with together");
         return;
+    }
     if(check==2){  //simple find
         FILE * fp = fopen(path , "r");
         if(fp==NULL){
             printf("it's not correct address or file name\n");
             return;
         }
-        counter = FindSearch(fp , string);
+        counter = FindSearch(fp , string ,word ,charc);
         fclose(fp);
         printf("%d\n" ,counter);
     }
+    if(check==1){
+        FILE * fp = fopen(path , "r");
+        if(fp==NULL){
+            printf("it's not correct address or file name\n");
+            return;
+        }
+        FindSearch(fp , string , word , charc);
+        fclose(fp);
+        if(count ==1){
+            int i = 0;
+            while(charc[i]!=-10)
+                i++;
+            printf("counted : %d\n" , i);
+            return;
+        }
+        else if(at==1){
+
+        }
+        else if(byword){
+            if(word[0]!=-10)
+            printf("it starts at word : %d\n" , word[0]);
+            else
+                printf("not found this word in text\n");
+            return;
+        }
+        else if(all){
+            int i = 0;
+            while(charc[i]!=-10){
+                if(charc[i+1]!=-10)
+                printf("%d , ",charc[i]);
+                else
+                    printf("%d\n" , charc[i]);
+                i++;
+            }
+
+            return;
+        }
+    }
+    if(check==3){
+        FILE * fp = fopen(path , "r");
+        if(fp==NULL){
+            printf("it's not correct address or file name\n");
+            return;
+        }
+        FindSearch(fp , string , word , charc);
+        fclose(fp);
+        int i=0;
+        while(word[i]!=-10){
+            if(i==0){
+                printf("word is find in :\n");
+            }
+            if(i!=0 && (word[i]==word[i-1])){
+                i++;
+                continue;
+            }
+            printf("%d\n",word[i]);
+            i++;
+        }
+    }
+return;
 }
 
 void undo(char *a){
