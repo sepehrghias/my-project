@@ -36,7 +36,7 @@ int ch_enter(char *string);
 void find(char *a);
 int check_featf(int a , int b , int c , int d);
 void undo(char *a);
-int FindSearch(FILE*file ,const char * const string);
+int FindSearch(FILE*file ,char * string);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -549,32 +549,38 @@ int check_featf(int a , int b , int c , int d){
     }
 }
 
-int FindSearch(FILE*file ,const char * const string){
+int FindSearch(FILE*file ,char * string){
     char c;
     int counter = 0;
     int flag = 1;
     int max = 0;
     int t = strlen(string);
     char * search = calloc(NUM , sizeof(char));
+    if(string[t-1]=='*'){
+        string[t-1]='\0';
+        t = t -1 ;
+    }
     while(1){
         if(feof(file)){
             break;
         }
         c=fgetc(file);
+        if(c=='*'){
+            search[counter]='\\';
+            counter++;
+        }
         search[counter] = c;
-        if(c==' ' || c==EOF){
+        flag = 1;
             int i , j;
-            for(i=0 , j=t ; i<t-1 ; i++ , j--){
-                flag = 1;
+            for(i=0 , j=t-1 ; i<t ; i++ , j--){
                 if(search[counter-j] != string[i]) {
                     flag =0;
                     break;
                 }
             }
             if(flag==1 ){
-                return counter - t;
+                return counter - t + 1;
             }
-        }
 
         counter++;
     }
@@ -622,3 +628,5 @@ void find(char *a){
 void undo(char *a){
 
 }
+
+//handle \* in find
