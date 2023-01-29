@@ -37,6 +37,7 @@ void find(char *a);
 int check_featf(int a , int b , int c , int d);
 void undo(char *a);
 int FindSearch(FILE*file ,char * string);
+int SpecialFind(char *string , FILE *file);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -549,16 +550,53 @@ int check_featf(int a , int b , int c , int d){
     }
 }
 
+int SpecialFind (char * string , FILE * file){
+    char * search = calloc(NUM , sizeof(char));
+    char c;
+    int counter = 0 , max = -1 , flag = 1 , l=1;
+    int t = strlen(string);
+    while(1){
+        if(feof(file)){
+            break;
+        }
+        l=1;
+        c = fgetc(file);
+        if(c=='*'){
+            search[counter]='\\';
+            counter++;
+        }
+        search[counter] = c;
+        flag =1;
+        int i , j;
+        for(i =1 , j = t-2 ; i<t ; i++ , j--) {
+            if (search[counter - j] != string[i]) {
+                flag = 0;
+                break;
+            }
+        }
+            if(flag==1){
+                while ((search[counter-t+2 - l]!=' ') && ( counter-t+2-l!=-1))
+                    l++;
+                max = counter - t + 3 -l;
+            }
+        counter++;
+    }
+    return max;
+}
+
 int FindSearch(FILE*file ,char * string){
     char c;
     int counter = 0;
     int flag = 1;
-    int max = 0;
     int t = strlen(string);
     char * search = calloc(NUM , sizeof(char));
     if(string[t-1]=='*'){
         string[t-1]='\0';
         t = t -1 ;
+    }
+    if(string[0]=='*'){
+        counter = SpecialFind(string , file);
+        return counter;
     }
     while(1){
         if(feof(file)){
