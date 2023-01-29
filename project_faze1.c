@@ -14,6 +14,7 @@
 
 #include <unistd.h>
 
+
 #define NUM 1000000
 
 char clipboard[NUM];
@@ -32,7 +33,10 @@ void copy(char *a);
 void cut(char *a);
 void paste(char *a);
 int ch_enter(char *string);
-
+void find(char *a);
+int check_featf(int a , int b , int c , int d);
+void undo(char *a);
+int FindSearch(FILE*file ,const char * const string);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -41,26 +45,32 @@ int main(){
         gets(a);
         //barresi address dar qutation
 
-        if(!strncmp(a , "createfile--file " , strlen("createfile--file "))){
+        if(!strncmp(a , "createfile --file " , strlen("createfile --file "))){
             createfile(a);
         }
-        else if(!strncmp(a , "insertstr--file " , strlen("insertstr--file "))){
+        else if(!strncmp(a , "insertstr --file " , strlen("insertstr --file "))){
             insertstr(a);
         }
-        else if(!strncmp(a , "cat--file " , strlen("cat--file "))){
+        else if(!strncmp(a , "cat --file " , strlen("cat --file "))){
             cat(a);
         }
-        else if(!strncmp(a ,"removetstr--file " , strlen("removetstr--file ")) ){
+        else if(!strncmp(a ,"removetstr --file " , strlen("removetstr --file ")) ){
             removes(a);
         }
-        else if(!strncmp(a , "copystr--file " , strlen("copystr--file "))){
+        else if(!strncmp(a , "copystr --file " , strlen("copystr --file "))){
             copy(a);
         }
-        else if(!strncmp(a , "pastestr--file " , strlen("pastestr--file "))){
+        else if(!strncmp(a , "pastestr --file " , strlen("pastestr --file "))){
             paste(a);
         }
-        else if(!strncmp(a , "cutstr--file " , strlen("cutstr--file "))){
+        else if(!strncmp(a , "cutstr --file " , strlen("cutstr --file "))){
             cut(a);
+        }
+        else if(!strncmp(a , "find --str " , strlen("find --str "))){
+            find(a);
+        }
+        else if(!strncmp(a , "undo --file" , strlen("undo --file"))){
+            undo(a);
         }
         else if(!strcmp(a ,"exit")){
             printf("have a good time!\n");
@@ -124,7 +134,7 @@ char* get_path(char* a){
     path = strstr(a , "root");
     int counter = 0;
     while(1){
-        if(path[counter-4]=='.' && path[counter-3]=='t' && path[counter-1]=='t' && path[counter-2]=='x'){
+        if((path[counter-4]=='.' && path[counter-3]=='t' && path[counter-1]=='t' && path[counter-2]=='x') || (path[counter-1]=='c' && path[counter-2]=='.')){
             break;
         }
         path1[counter]=path[counter];
@@ -188,19 +198,39 @@ void createfile(char *a){
 
 char *getstring(char*a){
     int counter = 0;
+    int count = 0;
     char string[400]={'\0'};
     a = strstr(a , "--str ");
     while(1){
-        if( a[counter+6]==' ' && a[counter+7]=='-' && a[counter+8]=='-' && a[counter+9]=='p' && a[counter+10]=='o'){
-            string[counter+6]=='\0';
+        if(( a[counter+6]==' ' && a[counter+7]=='-' && a[counter+8]=='-' && a[counter+9]=='p' && a[counter+10]=='o') || (a[counter+6]==' ' &&
+        a[counter+7]=='-' && a[counter+8]=='-' && a[counter+9]=='f' && a[counter+10]=='i' && a[counter+11]=='l')){
+            break;
+        }
+        if((a[counter+6]=='"' && a[counter+7]==' ' && a[counter+8]=='-' && a[counter+9]=='-' && a[counter+10]=='p' && a[counter+11]=='o') || ( a[counter+6]=='"' && a[counter+7]==' ' &&
+        a[counter+8]=='-' && a[counter+9]=='-' && a[counter+10]=='f' && a[counter+11]=='i' && a[counter+12]=='l')){
             break;
         }
         if(a[counter]=='\0'){
             char * b = "FALSE RESULT";
             return b;
         }
-        string[counter]=a[counter+6];
+        if(a[counter+6]=='"'){
+            counter++;
+            string[count]=a[counter+6];
+            counter++;
+            count++;
+            continue;
+        }
+        if(a[counter+6]=='\\' && a[counter+7]=='"'){
+            counter++;
+            string[count]=a[counter+6];
+            counter++;
+            count++;
+            continue;
+        }
+        string[count]=a[counter+6];
         counter++;
+        count++;
     }
     return string;
 }
@@ -251,7 +281,7 @@ void insertstr(char *a) {
             }
 
         }
-        printf("%s %d\n" ,string , strlen(string));
+       // printf("%s %d\n" ,string , strlen(string));
         fclose(fp);
         int ska =0 ;
         if(from>lots){
@@ -499,4 +529,96 @@ int ch_enter(char *string){
         if(string[i]=='\n')
             counter++;
     }
+}
+
+int check_featf(int a , int b , int c , int d){
+    if(a == 1 && b==0 && c==0 && d==0)
+        return 1;
+    else if(a == 0 && b==1 && c==0 && d==0)
+        return 1;
+    else if(a == 0 && b==0 && c==1 && d==0)
+        return 1;
+    else if(a == 0 && b==0 && c==0 && d==1)
+        return 1;
+    else if(a == 0 && b==0 && c==0 && d==0)
+        return 2;
+    else if(a == 0 && b==0 && c==1 && d==1)
+        return 3;
+    else{
+        return 0;
+    }
+}
+
+int FindSearch(FILE*file ,const char * const string){
+    char c;
+    int counter = 0;
+    int flag = 1;
+    int max = 0;
+    int t = strlen(string);
+    char * search = calloc(NUM , sizeof(char));
+    while(1){
+        if(feof(file)){
+            break;
+        }
+        c=fgetc(file);
+        search[counter] = c;
+        if(c==' ' || c==EOF){
+            int i , j;
+            for(i=0 , j=t ; i<t-1 ; i++ , j--){
+                flag = 1;
+                if(search[counter-j] != string[i]) {
+                    flag =0;
+                    break;
+                }
+            }
+            if(flag==1 ){
+                return counter - t;
+            }
+        }
+
+        counter++;
+    }
+    return -1;
+}
+
+void find(char *a){
+    char *path = get_path(a);
+    int count = 0 ,  at = 0 , all = 0 , byword = 0;
+    char string[NUM];
+    char * b;
+    int check;
+    int counter = 0;
+    strcpy(string , getstring(a));
+    char *token;
+    b = strstr(a , "file");
+    token = strtok(b , "-");
+    while(token!=NULL){
+        if((!strncmp(token , "at " , 4)) || (!strncmp(token , "at" , 4)))
+            at++;
+        else if(!(strncmp(token , "all " , 5)) || (!strncmp ( token , "all" , 4)))
+            all++;
+        else if((!strncmp(token , "count " , 7)) || (!strncmp(token , "count" , 6)))
+            count++;
+        else if((!strncmp(token , "byword " , 8)) || (!strncmp(token , "byword" , 7)))
+            byword++;
+        token = strtok(NULL , "-");
+    }
+    printf("at : %d , all : %d , count : %d , byword : %d\n" ,at , all , count , byword);
+    check = check_featf(count , at , byword , all);
+    if(check==0)
+        return;
+    if(check==2){  //simple find
+        FILE * fp = fopen(path , "r");
+        if(fp==NULL){
+            printf("it's not correct address or file name\n");
+            return;
+        }
+        counter = FindSearch(fp , string);
+        fclose(fp);
+        printf("%d\n" ,counter);
+    }
+}
+
+void undo(char *a){
+
 }
