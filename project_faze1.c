@@ -24,6 +24,7 @@ char * find_name(char *path);
 int nameis_core(char *name);
 void insertstr(char *a);
 char* get_path(char* a);
+void ReplaceAt(char *string , int at , char *str1 , char *str2);
 void cat(char* a);
 int check_file(char *a);
 char *getstring(char *a);
@@ -33,6 +34,8 @@ void copy(char *a);
 void cut(char *a);
 void paste(char *a);
 int ch_enter(char *string);
+void GetStringR (char *a , char *str1  , char * str2);
+void replace(char *a);
 void find(char *a);
 int check_featf(int a , int b , int c , int d);
 void undo(char *a);
@@ -70,6 +73,9 @@ int main(){
         }
         else if(!strncmp(a , "find --str " , strlen("find --str "))){
             find(a);
+        }
+        else if(!strncmp(a , "replace --str1 "  , strlen("replace --str1"))){
+            replace(a);
         }
         else if(!strncmp(a , "undo --file" , strlen("undo --file"))){
             undo(a);
@@ -198,44 +204,52 @@ void createfile(char *a){
     }
 }
 
-char *getstring(char*a){
+char *getstring(char*a) {
     int counter = 0;
     int count = 0;
-    char string[400]={'\0'};
-    a = strstr(a , "--str ");
-    while(1){
-        if(( a[counter+6]==' ' && a[counter+7]=='-' && a[counter+8]=='-' && a[counter+9]=='p' && a[counter+10]=='o') || (a[counter+6]==' ' &&
-        a[counter+7]=='-' && a[counter+8]=='-' && a[counter+9]=='f' && a[counter+10]=='i' && a[counter+11]=='l')){
-            break;
-        }
-        if((a[counter+6]=='"' && a[counter+7]==' ' && a[counter+8]=='-' && a[counter+9]=='-' && a[counter+10]=='p' && a[counter+11]=='o') || ( a[counter+6]=='"' && a[counter+7]==' ' &&
-        a[counter+8]=='-' && a[counter+9]=='-' && a[counter+10]=='f' && a[counter+11]=='i' && a[counter+12]=='l')){
-            break;
-        }
-        if(a[counter]=='\0'){
-            char * b = "FALSE RESULT";
-            return b;
-        }
-        if(a[counter+6]=='"'){
-            counter++;
-            string[count]=a[counter+6];
+    char string[400] = {'\0'};
+    a = strstr(a, "--str");
+        while (1) {
+            if ((a[counter + 6] == ' ' && a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'p' &&a[counter + 10] == 'o')
+                || (a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'f' &&a[counter + 10] == 'i' && a[counter + 11] == 'l')
+                ||(a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter+9]=='s' && a[counter+10]=='t' && a[counter+11]=='r'
+                && a[counter+12]=='2')) {
+                break;
+            }
+            if ((a[counter + 6] == '"' && a[counter + 7] == ' ' && a[counter + 8] == '-' && a[counter + 9] == '-' &&
+                 a[counter + 10] == 'p' && a[counter + 11] == 'o') || (a[counter + 6] == '"' && a[counter + 7] == ' ' &&
+                 a[counter + 8] == '-' && a[counter + 9] == '-' &&a[counter + 10] == 'f' &&
+                 a[counter + 11] == 'i' &&a[counter + 12] == 'l') ||( a[counter+6]=='"' && a[counter + 7] == ' ' &&a[counter + 8] == '-' && a[counter + 9] == '-' &&
+                 a[counter+10]=='s' && a[counter+11]=='t' && a[counter+12]=='r'&& a[counter+13]=='2')) {
+                break;
+            }
+            if (a[counter] == '\0') {
+                char *b = "FALSE RESULT";
+                return b;
+            }
+            if(a[counter+5]=='1' || a[counter+5]=='2')
+                counter++;
+
+            if (a[counter + 6] == '"') {
+                counter++;
+                string[count] = a[counter + 6];
+                counter++;
+                count++;
+                continue;
+            }
+            if (a[counter + 6] == '\\' && a[counter + 7] == '"') {
+                counter++;
+                string[count] = a[counter + 6];
+                counter++;
+                count++;
+                continue;
+            }
+            string[count] = a[counter + 6];
             counter++;
             count++;
-            continue;
         }
-        if(a[counter+6]=='\\' && a[counter+7]=='"'){
-            counter++;
-            string[count]=a[counter+6];
-            counter++;
-            count++;
-            continue;
-        }
-        string[count]=a[counter+6];
-        counter++;
-        count++;
+        return string;
     }
-    return string;
-}
 
 void insertstr(char *a) {
     //back to insert to corect it
@@ -435,7 +449,7 @@ void copy(char *a){
         return;
     }
     sscanf(t,"--pos %d:%d --size %d -%c" , &line , &word , &chand , &flag);
-    if(line==1 || word==0 || flag=='\0'){
+    if(line==0 || word==0 || flag=='\0'){
         printf("not correct command\n");
         return;
     }
@@ -771,6 +785,80 @@ void find(char *a){
         }
     }
 return;
+}
+
+/*void GetStringR(char *a , char * str1 , char * str2 ){
+    char * c ;
+    c= strstr(a , "--str");
+    str1 = getstring(c);
+    c = c+3;
+    str2 = getstring(c);
+
+}*/
+
+void ReplaceAt(char * string , int at , char *str1 ,char *str2){
+    int a = 1;
+    char *pos , temp[NUM];
+    int index = 0 ,  olen;
+    int index1 = 0;
+    olen = strlen(str1);
+    strcpy(temp, string);
+    while((pos=strstr(temp , str1))!=NULL){
+        index = strlen(string)-strlen(pos);
+        index1 = pos - temp;
+        if(at==a || at==0) {
+            string[index] = '\0';
+            strcat(string, str2);
+            strcat(string, temp + index1 + olen);
+        }
+
+        if(at==a)
+            break;
+        strcpy(temp , string + index + 1 );
+        a++;
+    }
+}
+
+void replace(char * a){
+    char *path = get_path(a);
+    int at=0 , all=0 , ate;
+    char str1[100];
+    char string[300];
+    char str2[100];
+    char *c;
+    strcpy(str1 , getstring(a));
+    c= strstr(a , "--str");
+    c = c + 4;
+    strcpy(str2 , getstring(c));
+    if((!strcmp(str1 , "FALSE RESULT")) || (!strcmp(str2 , "FALSE RESULT"))){
+        printf("not correct command\n");
+        return;
+    }
+    printf("str 1 :%s , str 2 :%s\n" , str1 , str2);
+    c = strtok(a ,"-");
+    while(c!=NULL){
+        if((!strncmp(c , "at " , 3)) || (!strncmp(c , "at" , 2))) {
+            at++;
+            sscanf(c , "at %d" , &ate);
+        }
+        else if(!(strncmp(c , "all " , 4)) || (!strncmp ( c , "all" , 3)))
+            all++;
+        c = strtok(NULL , "-");
+    }
+    printf("at : %d , all : %d\n" , at , all);
+    FILE *fp = fopen(path , "r");
+    while(fgets(string , 300 , fp));
+    fclose(fp);
+    if(at==1)
+        ReplaceAt(string , ate , str1 ,str2);
+    else if(all)
+         ReplaceAt(string , 0 ,str1 , str2);
+    else
+        ReplaceAt(string , 1 , str1 , str2);
+    FILE *file = fopen(path , "w");
+    fputs(string , file);
+    fclose(file);
+    return;
 }
 
 void undo(char *a){
