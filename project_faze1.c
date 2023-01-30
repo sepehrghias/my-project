@@ -664,6 +664,7 @@ void find(char *a){
     int count = 0 ,  at = 0 , all = 0 , byword = 0;
     char string[NUM];
     char * b;
+    int  ate;
     int   word[100]  ={-10};
     int  charc[100]={-10};
     int check;
@@ -673,13 +674,15 @@ void find(char *a){
     b = strstr(a , "file");
     token = strtok(b , "-");
     while(token!=NULL){
-        if((!strncmp(token , "at " , 4)) || (!strncmp(token , "at" , 4)))
+        if((!strncmp(token , "at " , 3)) || (!strncmp(token , "at" , 2))) {
             at++;
-        else if(!(strncmp(token , "all " , 5)) || (!strncmp ( token , "all" , 4)))
+            sscanf(token , "at %d" , &ate);
+        }
+        else if(!(strncmp(token , "all " , 4)) || (!strncmp ( token , "all" , 3)))
             all++;
-        else if((!strncmp(token , "count " , 7)) || (!strncmp(token , "count" , 6)))
+        else if((!strncmp(token , "count " , 6)) || (!strncmp(token , "count" , 5)))
             count++;
-        else if((!strncmp(token , "byword " , 8)) || (!strncmp(token , "byword" , 7)))
+        else if((!strncmp(token , "byword " , 7)) || (!strncmp(token , "byword" , 6)))
             byword++;
         token = strtok(NULL , "-");
     }
@@ -715,7 +718,16 @@ void find(char *a){
             return;
         }
         else if(at==1){
-
+            int i =0 ;
+            while(charc[i]!=-10){
+                if(i+1==ate) {
+                    printf("this word repeated %d times\n" , ate);
+                    return;
+                }
+                i++;
+            }
+            printf("this word not repeated %d times\n" , ate);
+            return;
         }
         else if(byword){
             if(word[0]!=-10)
@@ -766,3 +778,4 @@ void undo(char *a){
 }
 
 //handle \* in find
+//handle *name to featrues
