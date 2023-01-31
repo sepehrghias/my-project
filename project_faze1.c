@@ -43,6 +43,7 @@ int SpecialFind(char *string , FILE *file);
 int chand_space(char * string);
 char * MakeUndoFile (char * path);
 void DoUndo(char * path , char * token);
+void AutoIndent(char * a);
 void restore(char *a);
 int main(){
     char a[300];
@@ -84,6 +85,9 @@ int main(){
         }
         else if(!strncmp(a , "undo --file" , strlen("undo --file"))){
             restore(a);
+        }
+        else if(!strncmp(a , "auto-indent " , strlen("auto-indent "))){
+            AutoIndent(a);
         }
         else if(!strcmp(a ,"exit")){
             printf("have a good time!\n");
@@ -999,6 +1003,101 @@ void restore(char * a){
     printf("undo successfully\n");
 }
 
+void AutoIndent(char *a){
+    char string[NUM];
+    int counter = 0;
+    char * token;
+    char c;
+    char tab[] = "    ";
+    int countacu = 0;
+    char * path = get_path(a);
+    FILE * fp = fopen(path , "r");
+    while((c=fgetc(fp))!=NULL){
+        if(feof(fp)){
+            break;
+        }
+        token=MakeUndoFile(path);
+        DoUndo(path , token);
+        string[counter] = c;
+
+        if(string[counter]=='{' && counter!=0){
+            int l = 1;
+            countacu++;
+            string[counter] = '\0';
+            while(string[counter-l]==' '){
+                string[counter-l]='\0';
+                l++;
+            }
+            if(string[counter-l]=='\n'){
+                counter-=l-1;
+                for(int i = 0 ; i<countacu-1 ; i++)
+                strcat(string , tab);
+                counter+=4;
+                string[counter]='{';
+                string[counter+1]='\n';
+                counter+=2;
+                continue;
+            }
+            counter -= l-1;
+            string[counter]=' ';
+            string[counter+1] ='{';
+            string[counter+2]='\n';
+            for(int i = 0 ; i<countacu ; i++)
+            strcat(string , tab);
+            counter = counter + 3 + countacu*4;
+
+            continue;
+        }
+
+        if(string[counter]=='{' && counter==0){
+            countacu++;
+            counter++;
+            string[counter]='\n';
+            strcat(string , tab);
+            counter +=4;
+        }
+
+        if(string[counter]=='}'){
+            string[counter]='\0';
+            int l = 1;
+            countacu--;
+            while(string[counter-l]==' '){
+                string[counter-l]='\0';
+                l++;
+            }
+            if(string[counter-l]=='\n' && string[counter-l-1]=='}'){
+                counter -= l-1;
+                for(int j=0 ; j<countacu ; j++)
+                    strcat(string , tab);
+                string[counter]='}';
+                if(countacu == 0)
+                    break;
+                else {
+                    counter++;
+                    string[counter]='\n';
+                    continue;
+                }
+            }
+            counter -= l-1;
+            string[counter]='\n';
+            for(int j=0 ; j<countacu ; j++)
+                strcat(string , tab);
+            string[counter + 4 *countacu + 1]='}';
+            counter = counter + 4 *countacu + 2;
+            if(countacu==0)
+                break;
+            string[counter]='\n';
+        }
+
+        counter++;
+    }
+    fclose(fp);
+    //printf("%s" , string);
+    FILE * file = fopen(path , "w");
+    fputs(string , file);
+    printf("auto indent successfully\n");
+    fclose(file);
+}
 //handle \* in find
 //handle *name to featrues
 //wildcard for replace
