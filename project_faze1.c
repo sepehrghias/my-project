@@ -45,6 +45,7 @@ char * MakeUndoFile (char * path);
 void DoUndo(char * path , char * token);
 void AutoIndent(char * a);
 void restore(char *a);
+void compare(char *a);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -88,6 +89,9 @@ int main(){
         }
         else if(!strncmp(a , "auto-indent " , strlen("auto-indent "))){
             AutoIndent(a);
+        }
+        else if(!strncmp(a , "compare " , 8)){
+            compare(a);
         }
         else if(!strcmp(a ,"exit")){
             printf("have a good time!\n");
@@ -1099,6 +1103,91 @@ void AutoIndent(char *a){
     fputs(string , file);
     printf("auto indent successfully\n");
     fclose(file);
+}
+
+int Chandline(FILE * a){
+    int line =0 ;
+    char string[NUM];
+    while(fgets(string , 500 , a)){
+        line++;
+    }
+    fseek(a , 0 , SEEK_SET);
+    return line;
+}
+
+void compare(char *a){
+    char * path;
+    int t =1 , b =1;
+    int s ,  f;
+    char * path2;
+    char string[500];
+    int line = 0;
+    char string2[500];
+    a = strstr(a , "root/");
+    if(a==NULL){
+        printf("it's not correct address or file name\n");
+        return;
+    }
+    path=get_path(a);
+    a = a+2;
+    a = strstr(a , "root/");
+    if(a==NULL){
+        printf("it's not correct address or file name\n");
+        return;
+    }
+    path2 = get_path(a);
+    FILE * fp = fopen(path , "r");
+    FILE * file = fopen(path2 , "r");
+    if(fp==NULL){
+        printf("First file not found\n");
+        return;
+    }
+    if(file==NULL){
+        printf("Second file not found\n");
+        return;
+    }
+    s = Chandline(fp);
+    f = Chandline(file);
+    while(1){
+        if(fgets(string ,400 , fp )==NULL){
+            t=0;
+        }
+        if(fgets(string2 , 400 ,file)==NULL){
+            b = 0;
+        }
+        if(!(t || b))
+            return;
+        line++;
+        if(t && b){
+            if(strcmp(string , string2)!=0){
+                printf("========== #%d  ==========\n" , line);
+                printf("%s\n" , string);
+                printf("%s\n" , string2);
+            }
+        }
+        if(t==0){
+            printf(">>>>>>>>>> #%d - #%d >>>>>>>>>>\n",line , f);
+            printf("%s\n",string2);
+            for(int i = 0 ; i<f - line ; i++){
+                fgets(string2 , 400 , fp);
+                printf("%s\n",string2);
+            }
+            break;
+        }
+        if(b==0){
+            printf(">>>>>>>>>> #%d - #%d >>>>>>>>>>\n",line , s);
+            printf("%s\n",string);
+            for(int i = 0 ; i<s - line ; i++){
+                fgets(string2 , 400 , file);
+                printf("%s\n",string);
+            }
+            break;
+        }
+    }
+    fclose(file);
+    fclose(fp);
+
+    return;
 }
 //handle \* in find
 //handle *name to featrues
