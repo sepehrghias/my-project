@@ -1012,12 +1012,13 @@ void AutoIndent(char *a){
     int countacu = 0;
     char * path = get_path(a);
     FILE * fp = fopen(path , "r");
+    token=MakeUndoFile(path);
+    DoUndo(path , token);
     while((c=fgetc(fp))!=NULL){
         if(feof(fp)){
             break;
         }
-        token=MakeUndoFile(path);
-        DoUndo(path , token);
+
         string[counter] = c;
 
         if(string[counter]=='{' && counter!=0){
@@ -1032,7 +1033,7 @@ void AutoIndent(char *a){
                 counter-=l-1;
                 for(int i = 0 ; i<countacu-1 ; i++)
                 strcat(string , tab);
-                counter+=4;
+                counter+=4*(countacu-1);
                 string[counter]='{';
                 string[counter+1]='\n';
                 counter+=2;
@@ -1069,6 +1070,7 @@ void AutoIndent(char *a){
                 counter -= l-1;
                 for(int j=0 ; j<countacu ; j++)
                     strcat(string , tab);
+                counter += 4*(countacu);
                 string[counter]='}';
                 if(countacu == 0)
                     break;
