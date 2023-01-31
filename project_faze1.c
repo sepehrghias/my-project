@@ -34,7 +34,7 @@ void copy(char *a);
 void cut(char *a);
 void paste(char *a);
 int ch_enter(char *string);
-void GetStringR (char *a , char *str1  , char * str2);
+void grep(char * a);
 void replace(char *a);
 void find(char *a);
 int check_featf(int a , int b , int c , int d);
@@ -76,6 +76,9 @@ int main(){
         }
         else if(!strncmp(a , "replace --str1 "  , strlen("replace --str1"))){
             replace(a);
+        }
+        else if(!strncmp(a , "grep " , strlen("grep "))){
+            grep(a);
         }
         else if(!strncmp(a , "undo --file" , strlen("undo --file"))){
             undo(a);
@@ -140,6 +143,10 @@ char* get_path(char* a){
     path1 = (char*)malloc(300 * sizeof(char));
     // if("creatfile--file /root"!=)
     path = strstr(a , "root");
+    if(path==NULL){
+         printf("you dont,t use root in your path\n");
+         return NULL;
+    }
     int counter = 0;
     while(1){
         if((path[counter-4]=='.' && path[counter-3]=='t' && path[counter-1]=='t' && path[counter-2]=='x') || (path[counter-1]=='c' && path[counter-2]=='.')){
@@ -620,6 +627,7 @@ int chand_space(char * string){
     return space;
 }
 
+
 int FindSearch(FILE*file ,char * string , int word[] , int l[]){
     char c;
     int space;
@@ -795,20 +803,37 @@ return;
     str2 = getstring(c);
 
 }*/
-
+/*void HazfStar(char * s){
+    for(int i = 0 ; i<strlen(s)-1 ; i++){
+        s[i]=s[i+1];
+    }
+    s[strlen(s)-1]='\0';
+}*/
 void ReplaceAt(char * string , int at , char *str1 ,char *str2){
     int a = 1;
     char *pos , temp[NUM];
+    int d =0;
     int index = 0 ,  olen;
     int index1 = 0;
+    if(str1[strlen(str1)-1]=='*') {
+        str1[strlen(str1) - 1] = '\0';
+        d=1;
+    }
     olen = strlen(str1);
     strcpy(temp, string);
     while((pos=strstr(temp , str1))!=NULL){
         index = strlen(string)-strlen(pos);
-        index1 = pos - temp;
+
         if(at==a || at==0) {
             string[index] = '\0';
+            if(d==1){
+                pos = strstr(pos , " ");
+                index1 = strlen(temp) - strlen(pos) -1;
+            }
+            else
+                index1 = strlen(temp) - strlen(pos);
             strcat(string, str2);
+
             strcat(string, temp + index1 + olen);
         }
 
@@ -861,9 +886,58 @@ void replace(char * a){
     return;
 }
 
+void grep_search(FILE*fp , int c , int i , char *path , int * fc , char * s){
+    char string[NUM];
+    while(fgets(string , 400 , fp ) != NULL){
+        if((strstr(string , s)) != NULL){
+            *(fc)+=1;
+            if(i==1){
+                printf("%s\n" ,path);
+                return;
+            }
+            if(c==0){
+                printf("%s" , string);
+            }
+        }
+    }
+    return;
+}
+void grep(char *a){
+    char string[300];
+    int fc = 0;
+    char * path;
+    int c=0 , i=0;
+        a = strstr(a , "-");
+        if(a[1]=='c')
+            c++;
+        else if(a[1]=='i')
+            i++;
+        a = strstr(a , "--str ");
+        strcpy(string , getstring(a));
+        a = strstr(a , "--files ");
+        printf("c is :%d , i is :%d\n" , c ,i);
+        a=strstr(a , "root");
+        while(a!=NULL){
+
+            path = get_path(a);
+            FILE * fp = fopen(path , "r");
+            grep_search(fp , c , i , path , &fc , string);
+            fclose(fp);
+            a = a + 2;
+            a=strstr(a , "root");
+        }
+        if(c==1){
+            printf("repeated in %d lines\n",fc);
+        }
+
+    return;
+}
+
 void undo(char *a){
 
 }
 
 //handle \* in find
 //handle *name to featrues
+//wildcard for replace
+//remove
