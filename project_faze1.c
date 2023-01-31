@@ -182,6 +182,7 @@ void createfile(char *a){
     int t;
     //check
     //kataha ra az ham joda kon
+    char *token;
     char *path1;
     char path[300];
     char *name;
@@ -211,6 +212,8 @@ void createfile(char *a){
 
         }
     }
+    token=MakeUndoFile(path);
+    DoUndo(path , token);
 }
 
 char *getstring(char*a) {
@@ -975,13 +978,21 @@ void DoUndo(char * path  , char * token){
 void restore(char * a){
     char * path = get_path(a);
     char * path2 = MakeUndoFile(path);
+    char string[100];
+    FILE *file = fopen(path , "r");
     FILE *fp = fopen(path2 , "r");
+    if(fp==NULL && (fgets(string , 100 , file))==NULL){
+        remove(path);
+        remove(path2);
+        return;
+    }
     if(fp==NULL)
         return;
     fclose(fp);
-    FILE *file = fopen(path , "r");
-    if(file==NULL)
+    if(file==NULL) {
+        printf("it's not correct address or file name\n");
         return;
+    }
     fclose(file);
     remove(path);
     rename(path2 , path);
@@ -991,4 +1002,4 @@ void restore(char * a){
 //handle \* in find
 //handle *name to featrues
 //wildcard for replace
-//remove
+//check removestr
