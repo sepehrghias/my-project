@@ -18,7 +18,7 @@
 #define NUM 1000000
 
 char clipboard[NUM];
-
+char undo_name[300];
 void createfile(char *a);
 char * find_name(char *path);
 int nameis_core(char *name);
@@ -38,10 +38,12 @@ void grep(char * a);
 void replace(char *a);
 void find(char *a);
 int check_featf(int a , int b , int c , int d);
-void undo(char *a);
 int FindSearch(FILE*file ,char * string , int word[] , int charc[]);
 int SpecialFind(char *string , FILE *file);
 int chand_space(char * string);
+char * MakeUndoFile (char * path);
+void DoUndo(char * path , char * token);
+void restore(char *a);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -81,7 +83,7 @@ int main(){
             grep(a);
         }
         else if(!strncmp(a , "undo --file" , strlen("undo --file"))){
-            undo(a);
+            restore(a);
         }
         else if(!strcmp(a ,"exit")){
             printf("have a good time!\n");
@@ -144,8 +146,8 @@ char* get_path(char* a){
     // if("creatfile--file /root"!=)
     path = strstr(a , "root");
     if(path==NULL){
-         printf("you dont,t use root in your path\n");
-         return NULL;
+        printf("you dont,t use root in your path\n");
+        return NULL;
     }
     int counter = 0;
     while(1){
@@ -216,47 +218,47 @@ char *getstring(char*a) {
     int count = 0;
     char string[400] = {'\0'};
     a = strstr(a, "--str");
-        while (1) {
-            if ((a[counter + 6] == ' ' && a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'p' &&a[counter + 10] == 'o')
-                || (a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'f' &&a[counter + 10] == 'i' && a[counter + 11] == 'l')
-                ||(a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter+9]=='s' && a[counter+10]=='t' && a[counter+11]=='r'
-                && a[counter+12]=='2')) {
-                break;
-            }
-            if ((a[counter + 6] == '"' && a[counter + 7] == ' ' && a[counter + 8] == '-' && a[counter + 9] == '-' &&
-                 a[counter + 10] == 'p' && a[counter + 11] == 'o') || (a[counter + 6] == '"' && a[counter + 7] == ' ' &&
-                 a[counter + 8] == '-' && a[counter + 9] == '-' &&a[counter + 10] == 'f' &&
-                 a[counter + 11] == 'i' &&a[counter + 12] == 'l') ||( a[counter+6]=='"' && a[counter + 7] == ' ' &&a[counter + 8] == '-' && a[counter + 9] == '-' &&
-                 a[counter+10]=='s' && a[counter+11]=='t' && a[counter+12]=='r'&& a[counter+13]=='2')) {
-                break;
-            }
-            if (a[counter] == '\0') {
-                char *b = "FALSE RESULT";
-                return b;
-            }
-            if(a[counter+5]=='1' || a[counter+5]=='2')
-                counter++;
+    while (1) {
+        if ((a[counter + 6] == ' ' && a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'p' &&a[counter + 10] == 'o')
+            || (a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'f' &&a[counter + 10] == 'i' && a[counter + 11] == 'l')
+            ||(a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter+9]=='s' && a[counter+10]=='t' && a[counter+11]=='r'
+               && a[counter+12]=='2')) {
+            break;
+        }
+        if ((a[counter + 6] == '"' && a[counter + 7] == ' ' && a[counter + 8] == '-' && a[counter + 9] == '-' &&
+             a[counter + 10] == 'p' && a[counter + 11] == 'o') || (a[counter + 6] == '"' && a[counter + 7] == ' ' &&
+                                                                   a[counter + 8] == '-' && a[counter + 9] == '-' &&a[counter + 10] == 'f' &&
+                                                                   a[counter + 11] == 'i' &&a[counter + 12] == 'l') ||( a[counter+6]=='"' && a[counter + 7] == ' ' &&a[counter + 8] == '-' && a[counter + 9] == '-' &&
+                                                                                                                        a[counter+10]=='s' && a[counter+11]=='t' && a[counter+12]=='r'&& a[counter+13]=='2')) {
+            break;
+        }
+        if (a[counter] == '\0') {
+            char *b = "FALSE RESULT";
+            return b;
+        }
+        if(a[counter+5]=='1' || a[counter+5]=='2')
+            counter++;
 
-            if (a[counter + 6] == '"') {
-                counter++;
-                string[count] = a[counter + 6];
-                counter++;
-                count++;
-                continue;
-            }
-            if (a[counter + 6] == '\\' && a[counter + 7] == '"') {
-                counter++;
-                string[count] = a[counter + 6];
-                counter++;
-                count++;
-                continue;
-            }
+        if (a[counter + 6] == '"') {
+            counter++;
             string[count] = a[counter + 6];
             counter++;
             count++;
+            continue;
         }
-        return string;
+        if (a[counter + 6] == '\\' && a[counter + 7] == '"') {
+            counter++;
+            string[count] = a[counter + 6];
+            counter++;
+            count++;
+            continue;
+        }
+        string[count] = a[counter + 6];
+        counter++;
+        count++;
     }
+    return string;
+}
 
 void insertstr(char *a) {
     //back to insert to corect it
@@ -264,6 +266,7 @@ void insertstr(char *a) {
     //hale //n
     //talash bara hazf namad moshkel dar
     char path[100] ,stri[400];
+    char * token;
     char *string;
     string = (char*)malloc(400 * sizeof(char));
     int from, to;
@@ -284,6 +287,8 @@ void insertstr(char *a) {
         printf("it's not correct address or file name\n");
         fclose(fp);
     } else {
+        token=MakeUndoFile(path);
+        DoUndo(path , token);
         while (1) {
             if (lots < from) {
 
@@ -304,7 +309,7 @@ void insertstr(char *a) {
             }
 
         }
-       // printf("%s %d\n" ,string , strlen(string));
+        // printf("%s %d\n" ,string , strlen(string));
         fclose(fp);
         int ska =0 ;
         if(from>lots){
@@ -369,6 +374,7 @@ void removes(char *a){
     char *path = get_path(a);
     char *string = (char*)calloc(NUM , sizeof(char));
     char * t;
+    char *token;
     char flag='\0';
     int l = 1;
     int line=0 , word=0 , chand;
@@ -390,6 +396,8 @@ void removes(char *a){
     }
     int counter = 0 , enter=1;
     int h = 0;
+    token=MakeUndoFile(path);
+    DoUndo(path , token);
     while(1){
         if(feof(fp))
             break;
@@ -399,35 +407,35 @@ void removes(char *a){
                 enter++;
         }
         else{
-                if(l<word+1){
-                    string[counter]=fgetc(fp);
-                    l++;
+            if(l<word+1){
+                string[counter]=fgetc(fp);
+                l++;
             }
-                else{
-                    if(flag=='b'){
-                        u=fgetc(fp);
-                        if(u==EOF)
-                            break;
-                        string[counter-chand]=u;
-                    }
-                    else if(flag=='f'){
-                        if(h==0) {
-                            for (int k = 0; k < chand-1; k++)
-                                fgetc(fp);
-                        }
-                        h++;
-                        //barresi qutation
-                        u=fgetc(fp);
-                        if(u==EOF)
-                            break;
-                        string[counter-1] = u;
-                    }
-                    //barresi word age \n dare ya na
-                    else{
-                        printf("not correct command\n");
-                        return;
-                    }
+            else{
+                if(flag=='b'){
+                    u=fgetc(fp);
+                    if(u==EOF)
+                        break;
+                    string[counter-chand]=u;
                 }
+                else if(flag=='f'){
+                    if(h==0) {
+                        for (int k = 0; k < chand-1; k++)
+                            fgetc(fp);
+                    }
+                    h++;
+                    //barresi qutation
+                    u=fgetc(fp);
+                    if(u==EOF)
+                        break;
+                    string[counter-1] = u;
+                }
+                    //barresi word age \n dare ya na
+                else{
+                    printf("not correct command\n");
+                    return;
+                }
+            }
         }
 
         counter++;
@@ -469,7 +477,7 @@ void copy(char *a){
     int counter = 0 , enter = 1 ;
     while(1){
         if(feof(fp))
-        break;
+            break;
         if(enter!=line){
             string[counter]=fgetc(fp);
             if(string[counter]=='\n')
@@ -487,7 +495,7 @@ void copy(char *a){
                     string[counter]=fgetc(fp);
                     for(i = chand-1 ,j =0  ; i>=0 ; j++ ,  i--)
                         clipboard[j] = string[counter-i];
-                        clipboard[j+1]='\0';
+                    clipboard[j+1]='\0';
                     break;
                 }
                 else if(flag=='f'){
@@ -552,6 +560,7 @@ int ch_enter(char *string){
         if(string[i]=='\n')
             counter++;
     }
+    return counter;
 }
 
 int check_featf(int a , int b , int c , int d){
@@ -608,11 +617,11 @@ int SpecialFind (char * string , FILE * file){
                 break;
             }
         }
-            if(flag==1){
-                while ((search[counter-t+2 - l]!=' ') && ( counter-t+2-l!=-1))
-                    l++;
-                max = counter - t + 3 -l;
-            }
+        if(flag==1){
+            while ((search[counter-t+2 - l]!=' ') && ( counter-t+2-l!=-1))
+                l++;
+            max = counter - t + 3 -l;
+        }
         counter++;
     }
     return max;
@@ -622,7 +631,7 @@ int chand_space(char * string){
     int space = 0;
     for(int i = 0 ; i<strlen(string) ; i++){
         if(string[i]==' ')
-        space++;
+            space++;
     }
     return space;
 }
@@ -658,21 +667,21 @@ int FindSearch(FILE*file ,char * string , int word[] , int l[]){
         }
         search[counter] = c;
         flag = 1;
-            int i , j;
-            for(i=0 , j=t-1 ; i<t ; i++ , j--){
-                if(search[counter-j] != string[i]) {
-                    flag =0;
-                    break;
-                }
+        int i , j;
+        for(i=0 , j=t-1 ; i<t ; i++ , j--){
+            if(search[counter-j] != string[i]) {
+                flag =0;
+                break;
             }
-            if(flag==1 ){
-                word[h]=counterw - space;
-                l[h]=counter - t + 1;
-                h++;
-                if(h==1) {
-                    max = counter - t + 1;
-                }
+        }
+        if(flag==1 ){
+            word[h]=counterw - space;
+            l[h]=counter - t + 1;
+            h++;
+            if(h==1) {
+                max = counter - t + 1;
             }
+        }
 
         counter++;
     }
@@ -753,7 +762,7 @@ void find(char *a){
         }
         else if(byword){
             if(word[0]!=-10)
-            printf("it starts at word : %d\n" , word[0]);
+                printf("it starts at word : %d\n" , word[0]);
             else
                 printf("not found this word in text\n");
             return;
@@ -762,7 +771,7 @@ void find(char *a){
             int i = 0;
             while(charc[i]!=-10){
                 if(charc[i+1]!=-10)
-                printf("%d , ",charc[i]);
+                    printf("%d , ",charc[i]);
                 else
                     printf("%d\n" , charc[i]);
                 i++;
@@ -792,7 +801,7 @@ void find(char *a){
             i++;
         }
     }
-return;
+    return;
 }
 
 /*void GetStringR(char *a , char * str1 , char * str2 ){
@@ -847,6 +856,7 @@ void ReplaceAt(char * string , int at , char *str1 ,char *str2){
 void replace(char * a){
     char *path = get_path(a);
     int at=0 , all=0 , ate;
+    char *token;
     char str1[100];
     char string[300];
     char str2[100];
@@ -871,13 +881,15 @@ void replace(char * a){
         c = strtok(NULL , "-");
     }
     printf("at : %d , all : %d\n" , at , all);
+    token=MakeUndoFile(path);
+    DoUndo(path , token);
     FILE *fp = fopen(path , "r");
     while(fgets(string , 300 , fp));
     fclose(fp);
     if(at==1)
         ReplaceAt(string , ate , str1 ,str2);
     else if(all)
-         ReplaceAt(string , 0 ,str1 , str2);
+        ReplaceAt(string , 0 ,str1 , str2);
     else
         ReplaceAt(string , 1 , str1 , str2);
     FILE *file = fopen(path , "w");
@@ -907,34 +919,73 @@ void grep(char *a){
     int fc = 0;
     char * path;
     int c=0 , i=0;
-        a = strstr(a , "-");
-        if(a[1]=='c')
-            c++;
-        else if(a[1]=='i')
-            i++;
-        a = strstr(a , "--str ");
-        strcpy(string , getstring(a));
-        a = strstr(a , "--files ");
-        printf("c is :%d , i is :%d\n" , c ,i);
-        a=strstr(a , "root");
-        while(a!=NULL){
+    a = strstr(a , "-");
+    if(a[1]=='c')
+        c++;
+    else if(a[1]=='i')
+        i++;
+    a = strstr(a , "--str ");
+    strcpy(string , getstring(a));
+    a = strstr(a , "--files ");
+    printf("c is :%d , i is :%d\n" , c ,i);
+    a=strstr(a , "root");
+    while(a!=NULL){
 
-            path = get_path(a);
-            FILE * fp = fopen(path , "r");
-            grep_search(fp , c , i , path , &fc , string);
-            fclose(fp);
-            a = a + 2;
-            a=strstr(a , "root");
-        }
-        if(c==1){
-            printf("repeated in %d lines\n",fc);
-        }
+        path = get_path(a);
+        FILE * fp = fopen(path , "r");
+        grep_search(fp , c , i , path , &fc , string);
+        fclose(fp);
+        a = a + 2;
+        a=strstr(a , "root");
+    }
+    if(c==1){
+        printf("repeated in %d lines\n",fc);
+    }
 
     return;
 }
 
-void undo(char *a){
+char * MakeUndoFile(char *path){
+    char path1[200];
+    char *NameOfFile;
+    char path2[200];
+    strcpy(path2 , path);
+    strcpy(path1 , path);
+    NameOfFile=find_name(path1);
+    int index = strlen(path2)-strlen(NameOfFile);
+    path2[index]='\0';
+    strcat(path2 , "_undo");
+    strcat(path2 , NameOfFile);
+    return path2;
+}
 
+void DoUndo(char * path  , char * token){
+    char string[NUM];
+    FILE * fp = fopen(path , "r");
+    if(fp==NULL)
+        return;
+    FILE * file = fopen(token , "w");
+    while(fgets(string , 400 , fp)!=NULL){
+        fputs(string , file);
+    }
+    fclose(fp);
+    fclose(file);
+}
+
+void restore(char * a){
+    char * path = get_path(a);
+    char * path2 = MakeUndoFile(path);
+    FILE *fp = fopen(path2 , "r");
+    if(fp==NULL)
+        return;
+    fclose(fp);
+    FILE *file = fopen(path , "r");
+    if(file==NULL)
+        return;
+    fclose(file);
+    remove(path);
+    rename(path2 , path);
+    printf("undo successfully\n");
 }
 
 //handle \* in find
