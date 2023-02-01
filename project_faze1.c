@@ -47,6 +47,7 @@ void AutoIndent(char * a);
 void restore(char *a);
 void compare(char *a);
 void tree(char * a);
+void ListFiles(char * dirname);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -1214,11 +1215,41 @@ void tree(char * a){
         while((entry = readdir(directory))!=NULL){
             if(counter>2){
             printf("%s\n",entry ->d_name);
+            if(depth==1 && entry ->d_type==DT_DIR){
+                char dirname[300]={'\0'};
+                strcat(dirname , "root");
+                strcat(dirname , "/");
+                strcat(dirname , entry ->d_name);
+                ListFiles(dirname);
+                }
             }
             counter++;
         }
         closedir(directory);
         return;
+}
+void ListFiles(char * dirname){
+    DIR * directory;
+    int counter=0;
+    struct dirent *entry;
+    directory = opendir(dirname);
+    if(directory==NULL){
+        printf("This is not a correct address\n");
+        closedir(directory);
+        return;
+    }
+
+    while((entry = readdir(directory))!=NULL){
+        if(counter>=2){
+            if(entry ->d_name==".DS_Store")
+            continue;
+            printf("--");
+            printf("%s\n",entry ->d_name);
+        }
+        counter++;
+    }
+    closedir(directory);
+    return;
 }
 //handle \* in find
 //handle *name to featrues
