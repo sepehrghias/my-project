@@ -46,6 +46,7 @@ void DoUndo(char * path , char * token);
 void AutoIndent(char * a);
 void restore(char *a);
 void compare(char *a);
+void tree(char * a);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -89,6 +90,9 @@ int main(){
         }
         else if(!strncmp(a , "auto-indent " , strlen("auto-indent "))){
             AutoIndent(a);
+        }
+        else if(!strncmp(a , "tree " , 5)){
+            tree(a);
         }
         else if(!strncmp(a , "compare " , 8)){
             compare(a);
@@ -1036,7 +1040,7 @@ void AutoIndent(char *a){
             if(string[counter-l]=='\n'){
                 counter-=l-1;
                 for(int i = 0 ; i<countacu-1 ; i++)
-                strcat(string , tab);
+                    strcat(string , tab);
                 counter+=4*(countacu-1);
                 string[counter]='{';
                 string[counter+1]='\n';
@@ -1048,7 +1052,7 @@ void AutoIndent(char *a){
             string[counter+1] ='{';
             string[counter+2]='\n';
             for(int i = 0 ; i<countacu ; i++)
-            strcat(string , tab);
+                strcat(string , tab);
             counter = counter + 3 + countacu*4;
 
             continue;
@@ -1189,7 +1193,34 @@ void compare(char *a){
 
     return;
 }
+
+void tree(char * a){
+    int depth;
+    int counter=0;
+    sscanf(a , "tree %d" , &depth);
+    if(depth<=-1){
+        printf("invalid depth\n");
+        return;
+    }
+        DIR * directory;
+        struct dirent *entry;
+        directory = opendir("root");
+        if(directory==NULL){
+            printf("This is not a correct address\n");
+            closedir(directory);
+            return;
+        }
+
+        while((entry = readdir(directory))!=NULL){
+            if(counter>2){
+            printf("%s\n",entry ->d_name);
+            }
+            counter++;
+        }
+        closedir(directory);
+        return;
+}
 //handle \* in find
 //handle *name to featrues
 //wildcard for replace
-//check removestr
+//check removestrv
