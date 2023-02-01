@@ -17,6 +17,7 @@
 
 #define NUM 1000000
 
+char output[NUM];
 char clipboard[NUM];
 char undo_name[300];
 void createfile(char *a);
@@ -25,7 +26,7 @@ int nameis_core(char *name);
 void insertstr(char *a);
 char* get_path(char* a);
 void ReplaceAt(char *string , int at , char *str1 , char *str2);
-void cat(char* a);
+void cat(char* a , int arman);
 int check_file(char *a);
 char *getstring(char *a);
 char* tabdil(char *a);
@@ -46,8 +47,9 @@ void DoUndo(char * path , char * token);
 void AutoIndent(char * a);
 void restore(char *a);
 void compare(char *a);
-void tree(char * a);
-void ListFiles(char * dirname);
+void tree(char * a , int arman);
+void ListFiles(char * dirname , int arman);
+void arman(char *a);
 int main(){
     char a[300];
     mkdir("root" , 0777);
@@ -55,15 +57,17 @@ int main(){
     while(1){
         gets(a);
         //barresi address dar qutation
-
-        if(!strncmp(a , "createfile --file " , strlen("createfile --file "))){
+        if(strstr(a , " =D ")!=NULL){
+            arman(a);
+        }
+        else if(!strncmp(a , "createfile --file " , strlen("createfile --file "))){
             createfile(a);
         }
         else if(!strncmp(a , "insertstr --file " , strlen("insertstr --file "))){
             insertstr(a);
         }
         else if(!strncmp(a , "cat --file " , strlen("cat --file "))){
-            cat(a);
+            cat(a , 1);
         }
         else if(!strncmp(a ,"removetstr --file " , strlen("removetstr --file ")) ){
             removes(a);
@@ -93,7 +97,7 @@ int main(){
             AutoIndent(a);
         }
         else if(!strncmp(a , "tree " , 5)){
-            tree(a);
+            tree(a  , 1);
         }
         else if(!strncmp(a , "compare " , 8)){
             compare(a);
@@ -238,7 +242,7 @@ char *getstring(char*a) {
         if ((a[counter + 6] == ' ' && a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'p' &&a[counter + 10] == 'o')
             || (a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'f' &&a[counter + 10] == 'i' && a[counter + 11] == 'l')
             ||(a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter+9]=='s' && a[counter+10]=='t' && a[counter+11]=='r'
-               && a[counter+12]=='2')) {
+               && a[counter+12]=='2') || strlen(a)==counter + 6) {
             break;
         }
         if ((a[counter + 6] == '"' && a[counter + 7] == ' ' && a[counter + 8] == '-' && a[counter + 9] == '-' &&
@@ -364,12 +368,13 @@ void insertstr(char *a) {
     }
 }
 
-void cat(char* a) {
+void cat(char* a , int arman) {
     //check
     //qutation
     char *path;
     path = get_path(a);
-
+    if(!arman)
+        memset(output , '\0' , NUM);
     char string[100];
     FILE *myfile = fopen(path, "r");
     while (1) {
@@ -379,9 +384,13 @@ void cat(char* a) {
         }
         if (fgets(string, 20, myfile) == NULL)
             break;
+        if(arman)
         printf("%s", string);
+        if(!arman)
+            strcat(output , string);
     }
     fclose(myfile);
+    if(arman)
     printf("\n");
 }
 void removes(char *a){
@@ -1195,9 +1204,11 @@ void compare(char *a){
     return;
 }
 
-void tree(char * a){
+void tree(char * a , int arman){
     int depth;
     int counter=0;
+    if(arman)
+        memset(output , '\0' , NUM);
     sscanf(a , "tree %d" , &depth);
     if(depth<=-1){
         printf("invalid depth\n");
@@ -1214,13 +1225,18 @@ void tree(char * a){
 
         while((entry = readdir(directory))!=NULL){
             if(counter>2){
+                if(arman)
             printf("%s\n",entry ->d_name);
+                if(!arman){
+                    strcat(output , entry ->d_name);
+                    strcat(output , "\n");
+                }
             if(depth==1 && entry ->d_type==DT_DIR){
                 char dirname[300]={'\0'};
                 strcat(dirname , "root");
                 strcat(dirname , "/");
                 strcat(dirname , entry ->d_name);
-                ListFiles(dirname);
+                ListFiles(dirname , arman);
                 }
             }
             counter++;
@@ -1228,7 +1244,7 @@ void tree(char * a){
         closedir(directory);
         return;
 }
-void ListFiles(char * dirname){
+void ListFiles(char * dirname , int arman){
     DIR * directory;
     int counter=0;
     struct dirent *entry;
@@ -1243,15 +1259,61 @@ void ListFiles(char * dirname){
         if(counter>=2){
             if(entry ->d_name==".DS_Store")
             continue;
-            printf("--");
-            printf("%s\n",entry ->d_name);
+            if(arman) {
+                printf("--");
+                printf("%s\n", entry->d_name);
+            }
+            if(!arman){
+                strcat(output , entry ->d_name);
+                strcat(output , "\n");
+            }
         }
         counter++;
     }
     closedir(directory);
     return;
 }
+char * CommandFirst(char *a){
+    char string[400];
+    int counter = 0;
+    while(a[counter]!=' ' || a[counter+1]!='=' || a[counter+2]!='D' || a[counter+3]!=' ') {
+        string[counter] = a[counter];
+        counter++;
+    }
+    return string;
+}
+
+char * CommandSecond(char *a){
+    a = strstr(a , "=D ");
+    a=a+3;
+    return a;
+}
+
+void arman(char * a){
+//    printf("%s",a);
+    char first_function[NUM];
+    char second_function[NUM];
+    strcpy(first_function , CommandFirst(a));
+    strcpy(second_function , CommandSecond(a));
+    printf("%s\n",first_function);
+    printf("%s\n",second_function);
+    if(!strncmp(first_function , "cat --file " , strlen("cat --file "))){
+        cat(a , 0);
+    }
+    else if(!strncmp(first_function , "tree " , 5)){
+        tree(a  , 0);
+        output[strlen(output)-1]='\0';
+    }
+    //printf("%s\n",output);
+    if(!strncmp(second_function , "insertstr --file " , strlen("insertstr --file "))){
+        strcat(second_function , " --str ");
+        strcat(second_function , output);
+        insertstr(second_function);
+    }
+    return;
+}
 //handle \* in find
 //handle *name to featrues
 //wildcard for replace
 //check removestrv
+//handle closing pairs
