@@ -949,7 +949,6 @@ void grep(char *a){
         c++;
     else if(a[1]=='i')
         i++;
-    a = strstr(a , "--str ");
     strcpy(string , getstring(a));
     a = strstr(a , "--files ");
     printf("c is :%d , i is :%d\n" , c ,i);
@@ -1310,6 +1309,16 @@ void arman(char * a){
         strcat(second_function , output);
         insertstr(second_function);
     }
+    else if(!strncmp(second_function , "find --file " , strlen("find --file "))){
+        strcat(second_function , " --str ");
+        strcat(second_function , output);
+        find(second_function);
+    }
+    else if(!strncmp(second_function  , "grep " , 5)){
+        strcat(second_function , " --str ");
+        strcat(second_function , output);
+        grep(second_function);
+    }
     return;
 }
 //handle \* in find
@@ -1317,3 +1326,5 @@ void arman(char * a){
 //wildcard for replace
 //check removestrv
 //handle closing pairs
+//getpath
+//grep
