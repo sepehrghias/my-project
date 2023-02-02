@@ -1328,8 +1328,8 @@ void arman(char * a){
     char second_function[NUM];
     strcpy(first_function , CommandFirst(a));
     strcpy(second_function , CommandSecond(a));
-    printf("%s\n",first_function);
-    printf("%s\n",second_function);
+    //printf("%s\n",first_function);
+    //printf("%s\n",second_function);
     if(!strncmp(first_function , "cat --file " , strlen("cat --file "))){
         cat(a , 0);
     }
