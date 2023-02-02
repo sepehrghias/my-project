@@ -238,6 +238,10 @@ char *getstring(char*a) {
     int count = 0;
     char string[400] = {'\0'};
     a = strstr(a, "--str");
+    if(a==NULL) {
+        char *t = "FALSE RESULT";
+        return t;
+    }
     while (1) {
         if ((a[counter + 6] == ' ' && a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'p' &&a[counter + 10] == 'o')
             || (a[counter + 6] == ' ' &&a[counter + 7] == '-' && a[counter + 8] == '-' && a[counter + 9] == 'f' &&a[counter + 10] == 'i' && a[counter + 11] == 'l')
@@ -286,6 +290,7 @@ void insertstr(char *a) {
     //hale //n
     //talash bara hazf namad moshkel dar
     char path[100] ,stri[400];
+    int count = 0;
     char * token;
     char *string;
     string = (char*)malloc(400 * sizeof(char));
@@ -297,8 +302,13 @@ void insertstr(char *a) {
         return ;
     }
     a = strstr(a , "--pos");
-    sscanf(a , "--pos %d:%d" ,& from ,& to);
-    int line = to - from;
+    if(a==NULL){
+        printf("not correct command\n");
+        return ;
+    }
+    int line = ch_enter(string);
+    sscanf(a , "--pos %d:%d" ,& from ,&to);
+    //int line = to - from;
     char *matn =(char*) calloc(NUM , sizeof(char));
     char *matn2 =(char*) calloc(NUM , sizeof(char));
     int lots = 1, counter = 0;
@@ -310,16 +320,19 @@ void insertstr(char *a) {
         token=MakeUndoFile(path);
         DoUndo(path , token);
         while (1) {
-            if (lots < from) {
+            if (lots < from || count!=to) {
 
+                matn[counter]=fgetc(fp);
                 if (feof(fp)) {
                     break;
                 }
-                matn[counter]=fgetc(fp);
+                count++;
                 if (matn[counter] == '\n') {
                     lots++;
+                    count=0;
                 }
                 counter++;
+
             } else {
 
                 if (fgets(stri, 40, fp) == NULL) {
@@ -329,10 +342,12 @@ void insertstr(char *a) {
             }
 
         }
+        line = line + lots;
+        line+= ch_enter(matn2);
         // printf("%s %d\n" ,string , strlen(string));
         fclose(fp);
         int ska =0 ;
-        if(from>lots){
+        if(from>lots || count!=to){
             printf("you enter wrong position\n");
             return;
         }
@@ -356,13 +371,9 @@ void insertstr(char *a) {
             ska++;
         }
         int g = ch_enter(string);
-        if(line-g>0){
-            for(int i = line-g  ; i!=0 ; i--)
-                fputc('\n' , file);
-        }
-        fputc('\n' , file);
         fputs(matn2 , file);
-
+        if(lots == line)
+            fputc('\n' , file);
         printf("added succesfully\n");
         fclose(file);
     }
@@ -401,7 +412,7 @@ void removes(char *a){
     char * t;
     char *token;
     char flag='\0';
-    int l = 1;
+    int l = 0;
     int line=0 , word=0 , chand;
     t= strstr(a , "--pos");
     if(t==NULL){
