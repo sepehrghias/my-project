@@ -229,8 +229,6 @@ void createfile(char *a){
 
         }
     }
-    token=MakeUndoFile(path);
-    DoUndo(path , token);
 }
 
 char *getstring(char*a) {
@@ -413,14 +411,14 @@ void removes(char *a){
     char *token;
     char flag='\0';
     int l = 0;
-    int line=0 , word=0 , chand;
+    int line=0 , word=-1 , chand;
     t= strstr(a , "--pos");
     if(t==NULL){
         printf("not correct command\n");
         return;
     }
     sscanf(t,"--pos %d:%d --size %d -%c" , &line , &word , &chand , &flag);
-    if(line==1 || word==0 || flag=='\0'){
+    if(line==0 || word==-1 || flag=='\0'){
         printf("not correct command\n");
         return;
     }
@@ -491,8 +489,8 @@ void copy(char *a){
     char *path = get_path(a);
     char * t = (char *)calloc(NUM , sizeof(char));
     char *string = (char*)calloc(NUM , sizeof(char));
-    int l =1 ;
-    int line = 0 , word = 0 , chand;
+    int l =0 ;
+    int line = 0 , word = -1 , chand;
     char flag;
     t= strstr(a , "--pos");
     if(t==NULL){
@@ -500,7 +498,7 @@ void copy(char *a){
         return;
     }
     sscanf(t,"--pos %d:%d --size %d -%c" , &line , &word , &chand , &flag);
-    if(line==0 || word==0 || flag=='\0'){
+    if(line==0 || word==-1 || flag=='\0'){
         printf("not correct command\n");
         return;
     }
@@ -562,7 +560,6 @@ void copy(char *a){
 void cut(char *a){
     copy(a);
     removes(a);
-    printf("cut successfully\n");
 }
 char * tabdil(char *a){
     char path[NUM];
