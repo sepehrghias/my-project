@@ -913,6 +913,12 @@ void replace(char * a){
         printf("not correct command\n");
         return;
     }
+    FILE * ft = fopen(path , "r");
+    if(ft==NULL){
+        printf("it's not correct address or file name\n");
+        return;
+    }
+    fclose(ft);
     printf("str 1 :%s , str 2 :%s\n" , str1 , str2);
     c = strtok(a ,"-");
     while(c!=NULL){
@@ -978,6 +984,10 @@ void grep(char *a){
 
         path = get_path(a);
         FILE * fp = fopen(path , "r");
+        if(fp==NULL){
+            printf("it's not correct address or file name\n");
+            return;
+        }
         grep_search(fp , c , i , path , &fc , string);
         fclose(fp);
         a = a + 2;
@@ -1050,6 +1060,11 @@ void AutoIndent(char *a){
     int countacu = 0;
     char * path = get_path(a);
     FILE * fp = fopen(path , "r");
+    if(fp==NULL)
+    {
+        printf("it's not correct address or file name\n");
+        return;
+    }
     token=MakeUndoFile(path);
     DoUndo(path , token);
     while((c=fgetc(fp))!=NULL){
@@ -1110,13 +1125,9 @@ void AutoIndent(char *a){
                     strcat(string , tab);
                 counter += 4*(countacu);
                 string[counter]='}';
-                if(countacu == 0)
-                    break;
-                else {
                     counter++;
                     string[counter]='\n';
                     continue;
-                }
             }
             counter -= l-1;
             string[counter]='\n';
@@ -1124,8 +1135,6 @@ void AutoIndent(char *a){
                 strcat(string , tab);
             string[counter + 4 *countacu + 1]='}';
             counter = counter + 4 *countacu + 2;
-            if(countacu==0)
-                break;
             string[counter]='\n';
         }
 
