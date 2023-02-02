@@ -894,6 +894,7 @@ void ReplaceAt(char * string , int at , char *str1 ,char *str2){
         strcpy(temp , string + index + 1 );
         a++;
     }
+
 }
 
 void replace(char * a){
@@ -952,6 +953,8 @@ void grep_search(FILE*fp , int c , int i , char *path , int * fc , char * s){
             }
             if(c==0){
                 printf("%s" , string);
+                if(string[strlen(string)-1]!='\n')
+                printf("\n");
             }
         }
     }
@@ -1339,7 +1342,6 @@ void arman(char * a){
     }
     return;
 }
-//handle \* in find
 //handle *name to featrues
 //wildcard for replace
 //check removestrv
