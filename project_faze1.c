@@ -1196,14 +1196,18 @@ void compare(char *a){
             if(strcmp(string , string2)!=0){
                 printf("========== #%d  ==========\n" , line);
                 printf("%s\n" , string);
-                printf("%s\n" , string2);
+                if(string[strlen(string)-1]!='\n')
+                    printf("\n");
+                    printf("%s\n", string2);
+                if(string[strlen(string2)-1]!='\n')
+                    printf("\n");
             }
         }
         if(t==0){
             printf(">>>>>>>>>> #%d - #%d >>>>>>>>>>\n",line , f);
             printf("%s\n",string2);
             for(int i = 0 ; i<f - line ; i++){
-                fgets(string2 , 400 , fp);
+                fgets(string2 , 400 , file);
                 printf("%s\n",string2);
             }
             break;
@@ -1212,7 +1216,7 @@ void compare(char *a){
             printf(">>>>>>>>>> #%d - #%d >>>>>>>>>>\n",line , s);
             printf("%s\n",string);
             for(int i = 0 ; i<s - line ; i++){
-                fgets(string2 , 400 , file);
+                fgets(string , 400 , fp);
                 printf("%s\n",string);
             }
             break;
@@ -1342,9 +1346,4 @@ void arman(char * a){
     }
     return;
 }
-//handle *name to featrues
-//wildcard for replace
-//check removestrv
 //handle closing pairs
-//getpath
-//grep
