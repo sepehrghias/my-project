@@ -672,7 +672,7 @@ int chand_space(char * string){
 
 int FindSearch(FILE*file ,char * string , int word[] , int l[]){
     char c;
-    int space;
+    int space ,  star = 0 ;
     int counter = 0 , counterw = 0;
     int flag = 1 , max = -1 , h = 0;
     int t = strlen(string);
@@ -694,6 +694,7 @@ int FindSearch(FILE*file ,char * string , int word[] , int l[]){
         if(c=='*'){
             search[counter]='\\';
             counter++;
+            star = 1;
         }
         if(c==' '){
             counterw++;
@@ -708,11 +709,19 @@ int FindSearch(FILE*file ,char * string , int word[] , int l[]){
             }
         }
         if(flag==1 ){
-            word[h]=counterw - space;
-            l[h]=counter - t + 1;
+            if(star==0) {
+                word[h] = counterw - space;
+                l[h] = counter - t + 1;
+            }
+            if(star==1){
+                word[h] = counterw - space - 1;
+                l[h] = counter - t ;
+            }
             h++;
             if(h==1) {
                 max = counter - t + 1;
+                if(star ==1)
+                    max--;
             }
         }
 
@@ -786,6 +795,7 @@ void find(char *a){
             while(charc[i]!=-10){
                 if(i+1==ate) {
                     printf("this word repeated %d times\n" , ate);
+                    printf("%d\n",charc[i]);
                     return;
                 }
                 i++;
