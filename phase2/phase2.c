@@ -14,8 +14,8 @@ char output[NUM];
 char commandstr[NUM];
 int status = 0;
 void command_mode(WINDOW * command);
-void input();
-
+void inputcommand(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input);
+void open ( WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input);
 int main(){
     while(1){
    initscr();
@@ -63,7 +63,7 @@ int main(){
         b = wgetch(mode);
         if(b=='/' || b==':'){
         command_mode(command);
-        //input(mode , mode1 , command , win , input);
+        inputcommand(mode , mode1 , command , win , input);
         break;
         }
     }
@@ -94,6 +94,43 @@ void command_mode(WINDOW * command){
     
 }
 
-void input(){
+void inputcommand(WINDOW * mode , WINDOW * file , WINDOW * command 
+, WINDOW * num , WINDOW* input){
+    if(!strncmp(commandstr , ":open " , 5)){
+        open( mode ,  file , command ,  num , input);
+    }
+    else{
+        mvwprintw(command , 2 , 2 , "valid command");
+        wrefresh(command);
+    }
+}
+
+
+char * getpath(){
+    char*path;
+    char *path1;
+    path1 = (char*)malloc(300 * sizeof(char));
+    // if("creatfile--file /root"!=)
+    path = strstr(commandstr , "root");
+    if(path==NULL){
+        printf("you dont,t use root in your path\n");
+        return NULL;
+    }
+    int counter = 0;
+    while(1){
+        if((path[counter-4]=='.' && path[counter-3]=='t' && 
+        path[counter-1]=='t' && path[counter-2]=='x') || (path[counter-1]=='c'
+         && path[counter-2]=='.')){
+            break;
+        }
+        path1[counter]=path[counter];
+        counter++;
+    }
+    return path1;
+}
+
+
+void open(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input){
+char * path = getpath();
 
 }
