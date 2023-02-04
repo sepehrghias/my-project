@@ -14,9 +14,7 @@ char output[NUM];
 char commandstr[NUM];
 int status = 0;
 void command_mode(WINDOW * command);
-void input_vim(char * a){
-return ;
-}
+void input();
 
 int main(){
     while(1){
@@ -41,6 +39,7 @@ int main(){
     WINDOW * mode1 = newwin(4 , 38 , maxy -10 , 26);
    refresh();
    box(mode1 , 0 , 0);
+   mvwprintw(mode1 , 1 , 3 , "NOfile");
    wrefresh(mode1);
 
    WINDOW * win = newwin(maxy - 10 , 8 , 1 ,1);
@@ -64,6 +63,7 @@ int main(){
         b = wgetch(mode);
         if(b=='/' || b==':'){
         command_mode(command);
+        //input(mode , mode1 , command , win , input);
         break;
         }
     }
@@ -92,4 +92,8 @@ void command_mode(WINDOW * command){
         i++;
     }
     
+}
+
+void input(){
+
 }
