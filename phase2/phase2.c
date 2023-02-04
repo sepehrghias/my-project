@@ -17,9 +17,30 @@ return ;
 
 int main(){
    initscr();
+   noecho();
+   int b;
+   cbreak();
    int maxx , maxy;
    getmaxyx(stdscr , maxy , maxx);
-   int b = getch();
+   WINDOW * mode = newwin(4 , 26 , maxy -10 , 1);
+   refresh();
+   box(mode , 0 , 0);
+   if(status==0)
+   mvwprintw(mode , 1 , 12 , "normal");
+   else if(status==1)
+    mvwprintw(mode , 1 , 12 , "visual");
+    else if(status==2)
+    mvwprintw(mode , 1 , 12 , "insert");
+    while(b!='/' && b!=':'){
+        b = wgetch(mode);
+    }
+   wrefresh(mode);
+   move(maxy - 4 , 2);
+    WINDOW * mode1 = newwin(4 , 38 , maxy -10 , 26);
+   refresh();
+   box(mode1 , 0 , 0);
+   wrefresh(mode1);
+
    WINDOW * win = newwin(maxy - 10 , 8 , 1 ,1);
    refresh();
    box(win , 0 , 0);
@@ -33,21 +54,9 @@ int main(){
    box(input , 0 , 0);
    wrefresh(input);
 
-   WINDOW * mode = newwin(4 , 26 , maxy -10 , 1);
-   refresh();
-   box(mode , 0 , 0);
-   if(status==0)
-   mvwprintw(mode , 1 , 12 , "normal");
-   else if(status==1)
-    mvwprintw(mode , 1 , 12 , "visual");
-    else if(status==2)
-    mvwprintw(mode , 1 , 12 , "insert");
-   wrefresh(mode);
+   
 
-   WINDOW * mode1 = newwin(4 , 38 , maxy -10 , 26);
-   refresh();
-   box(mode1 , 0 , 0);
-   wrefresh(mode1);
+  
 
    WINDOW * command = newwin(5 , 130 , maxy -7 , 1);
    refresh();
