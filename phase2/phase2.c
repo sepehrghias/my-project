@@ -8,10 +8,10 @@
 #include <sys/stat.h>
 
 #include <sys/types.h>
-#define NUM 10000;
+#define NUM 10000
 
-char output[10000];
-char command_str[10000];
+char output[NUM];
+char commandstr[NUM];
 int status = 0;
 void command_mode(WINDOW * command);
 void input_vim(char * a){
@@ -81,13 +81,13 @@ int main(){
 void command_mode(WINDOW * command){
     int b;
     int i = 2;
-    memset(command_str , '\0' , )
+    memset(commandstr , '\0' , NUM);
     while (1)
     {
         b=wgetch(command);
         if(b=='\n')
         return;
-        command_str[i-2]=(char)b;
+        commandstr[i-2]=(char)b;
         mvwprintw(command , 2 ,i ,"%c" , b);
         i++;
     }
