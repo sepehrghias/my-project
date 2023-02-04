@@ -31,9 +31,7 @@ int main(){
     mvwprintw(mode , 1 , 12 , "visual");
     else if(status==2)
     mvwprintw(mode , 1 , 12 , "insert");
-    while(b!='/' && b!=':'){
-        b = wgetch(mode);
-    }
+
    wrefresh(mode);
    move(maxy - 4 , 2);
     WINDOW * mode1 = newwin(4 , 38 , maxy -10 , 26);
@@ -54,14 +52,13 @@ int main(){
    box(input , 0 , 0);
    wrefresh(input);
 
-   
-
-  
-
    WINDOW * command = newwin(5 , 130 , maxy -7 , 1);
    refresh();
    box(command , 0 , 0);
    wrefresh(command);
+        while(b!='/' && b!=':' ){
+        b = wgetch(mode);
+    }
 
    getch();
    endwin();
