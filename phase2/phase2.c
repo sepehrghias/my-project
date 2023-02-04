@@ -1,14 +1,22 @@
 #include<stdio.h>
+
 #include<string.h>
+
 #include<ncurses.h>
+
 #include<stdlib.h>
+
 #include <curses.h>
+
 #include <dirent.h>
 
 #include <sys/stat.h>
 
 #include <sys/types.h>
+
+
 #define NUM 10000
+
 
 char output[NUM];
 char commandstr[NUM];
@@ -16,7 +24,9 @@ int status = 0;
 void command_mode(WINDOW * command);
 void inputcommand(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input);
 void open ( WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input);
+void createfile(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input);
 int main(){
+    mkdir("root" , 0777);
     while(1){
    initscr();
    noecho();
@@ -99,6 +109,9 @@ void inputcommand(WINDOW * mode , WINDOW * file , WINDOW * command
     if(!strncmp(commandstr , ":open " , 5)){
         open( mode ,  file , command ,  num , input);
     }
+    else if(!strncmp(commandstr , "createfile --file " , strlen("createfile --file "))){
+        createfile(mode ,  file , command ,  num , input);
+    }
     else{
         mvwprintw(command , 2 , 2 , "valid command");
         wrefresh(command);
@@ -129,8 +142,33 @@ char * getpath(){
     return path1;
 }
 
+void makedir(char *path){
+    char *string ;
+    string = (char *) calloc(100 , sizeof(char));
+    int i = 0;
+    string[0]='\0';
+    while(1){
+        if(i==strlen(path))
+            break;
+        if(path[i]=='/'){
+            mkdir(string , 0777);
+        }
+        string[i]=path[i];
 
+        i++;
+    }
+
+}
 void open(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input){
 char * path = getpath();
 
+}
+
+void createfile(WINDOW * mode , WINDOW * file , WINDOW * command , WINDOW * num , WINDOW* input){
+    char * path = getpath();
+    makedir(path);
+    FILE*fp = fopen(path , "w");
+    fclose(fp);
+     mvwprintw(command , 2 , 2 , "succesfull");
+    wrefresh(command);
 }
