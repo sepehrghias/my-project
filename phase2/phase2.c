@@ -8,14 +8,18 @@
 #include <sys/stat.h>
 
 #include <sys/types.h>
+#define NUM 10000;
 
-char output[100000];
+char output[10000];
+char command_str[10000];
 int status = 0;
+void command_mode(WINDOW * command);
 void input_vim(char * a){
 return ;
 }
 
 int main(){
+    while(1){
    initscr();
    noecho();
    int b;
@@ -56,13 +60,36 @@ int main(){
    refresh();
    box(command , 0 , 0);
    wrefresh(command);
-        while(b!='/' && b!=':' ){
+        while(1){
         b = wgetch(mode);
+        if(b=='/' || b==':'){
+        command_mode(command);
+        break;
+        }
     }
 
    getch();
    endwin();
 
+
+    }
+
     return 0;
    
+}
+
+void command_mode(WINDOW * command){
+    int b;
+    int i = 2;
+    memset(command_str , '\0' , )
+    while (1)
+    {
+        b=wgetch(command);
+        if(b=='\n')
+        return;
+        command_str[i-2]=(char)b;
+        mvwprintw(command , 2 ,i ,"%c" , b);
+        i++;
+    }
+    
 }
